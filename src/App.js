@@ -32,6 +32,7 @@ function App() {
     <div>
       <h1>My Hacker Stories</h1>
       <h2>Some other change to test things</h2>
+      <h3>Testing adding changes to an already merged branch</h3>
 
       <label htmlFor="search"> Search: </label>
       <input id="search" type="text" />
