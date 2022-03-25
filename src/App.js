@@ -31,6 +31,7 @@ function App() {
   return(
     <div>
       <h1>My Hacker Stories</h1>
+      <h2>Some other change to test things</h2>
 
       <label htmlFor="search"> Search: </label>
       <input id="search" type="text" />
