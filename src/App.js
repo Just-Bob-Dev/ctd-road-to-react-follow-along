@@ -3,28 +3,32 @@ import TodoList from './TodoList';
 import AddTodoForm from './AddTodoForm';
 
 
-function Search() {
-  const handleChange = (event) => {
+function Search(props) {
+  
+  const handleSearch = (event) => {
     console.log(event);
+    props.onSearch(event.target.value);
   }
 
-  const handleMouseOver = (event) => {
-    console.log(event);
-  }
+  const searchStories = props.todoItems.filter((x) => x.title.toLowerCase().includes(props.searchTerm.toLowerCase()))
 
   return(
     <div>
       <label htmlFor="search"> Search: </label>
-      <input id="search" type="text" onChange={handleChange} onMouseOver={handleMouseOver}/>
+      <input id="search" type="text" onChange={handleSearch}/>
+      <p>Searching for: <strong>{props.searchTerm}</strong></p>
+      <TodoList list={searchStories}/>
     </div>
   )
 }
 
 function App() {
-  // const handleAddition = (event) => {
-  //   console.log("caught it: ", event.target.value);
-  // }
-  const [newTodo, setNewTodo] = React.useState('');
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [todoList, setTodoList] = React.useState([]);
+
+  function addTodo(newTodo) {
+    setTodoList([...todoList, newTodo]);
+  }
 
   const todoItems = [
     {
@@ -50,10 +54,12 @@ function App() {
   return(
     <div>
       <h1>My Hacker Stories</h1>
-      <AddTodoForm onAddTodo={setNewTodo}/>
+      <AddTodoForm onAddTodo={addTodo}/>
       <hr />
-      <TodoList list={todoItems} />
-      <p>{newTodo}</p>
+      <TodoList list={todoList} />
+      {/* <p>{newTodo}</p> */}
+      <Search onSearch={setSearchTerm} searchTerm={searchTerm} todoItems={todoItems}/>
+      
     </div>
   );
 }
