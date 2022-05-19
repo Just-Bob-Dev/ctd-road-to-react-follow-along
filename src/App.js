@@ -21,9 +21,14 @@ const initialTodoItems = [
     title: 'Grade Assignments',
     author: 'Bob',
     points: 10
+  },
+  {
+    id: 3,
+    title: 'something else',
+    author: 'Bob',
+    points: 10
   }
 ]
-
 
 const useSemiPersistentState = (key, initialState) => {
   const [value, setValue] = React.useState(JSON.parse(localStorage.getItem(key)) || initialState);
@@ -35,19 +40,75 @@ const useSemiPersistentState = (key, initialState) => {
   return [value, setValue];
 }
 
-function App() {
-  // const[searchTerm, setSearchTerm] = useSemiPersistentState('search', '');
+const storiesReducer = ( state, action ) => {
+  switch(action.type) {
+    case 'SET_STORIES':
+      return {
+        ...state,
+        data: action.payload
+      }
+    case 'STORIES_FETCH_INIT':
+      return {
+        ...state,
+        isLoading: true,
+        isError: false
+      };
+    case 'STORIES_FETCH_SUCCESS':
+      return {
+        ...state,
+        isLoading: false,
+        isError: false,
+        data: action.payload
+      }
+    case 'REMOVE_STORY':
+      // return state.filter( story =>  action.payload.id !== story.id)
+      return {
+        ...state,
+        data: state.data.filter(story => action.payload.id !== story.id)
+      }
+    default:
+      throw new Error('error');
+  }
+}
 
+const getInitialListItems = () =>
+    new Promise(resolve => 
+      setTimeout(
+        () => resolve({ data: { todos: initialTodoItems } }),
+        2000
+      )
+    );
+
+function App() {
+  const [searchTerm, setSearchTerm] = useSemiPersistentState('search', '');
   const [todoList, setTodoList] = useSemiPersistentState('todoList', []);
 
-  const [stories, setStories] = React.useState(initialTodoItems);
+  const [stories, dispatchStories] = React.useReducer(
+    storiesReducer,
+    {data: [], isLoading: false, isError: false}
+  )
+
+  React.useEffect(() => {
+    dispatchStories({type: 'STORIES_FETCH_INIT'});
+
+    // setIsLoading(true);
+    getInitialListItems().then(result => {
+      dispatchStories({
+        type: 'STORIES_FETCH_SUCCESS',
+        payload: result.data.todos
+      });
+    })
+    .catch(() => dispatchStories({type: 'STORIES_FETCH_FAILURE'}))
+  }, []);
 
   const handleRemoveStories = item => {
-    const newStories = stories.filter(story => item.id !== story.id);
-    setStories(newStories);
+    dispatchStories({
+      type: 'REMOVE_STORY',
+      payload: item
+    })
   }
 
-  const handleRemoveTodoItems = item => {
+  const removeTodo = item => {
     const tempTodoItemArray = todoList.filter(todo => item.id !== todo.id);
     setTodoList(tempTodoItemArray);
   }
@@ -61,10 +122,15 @@ function App() {
       <h1>My Hacker Stories</h1>
       <AddTodoForm onAddTodo={addTodo}/>
       <hr />
-      <TodoList list={todoList} onRemoveItem={handleRemoveTodoItems}/>
+      <TodoList list={todoList} onRemoveItem={removeTodo}/> {/* will be onRemoveTodo when reviewing */}
       {/* <p>{newTodo}</p> */}
       <hr />
-      {/* <Search onSearch={setSearchTerm} searchTerm={searchTerm} todoItems={stories} onRemoveStories={handleRemoveStories}/> */}
+      {stories.isError && <p>Something Went Wrong</p>}
+      {stories.isLoading ? (
+        <p>Loading ...</p> ) :
+        (<Search onSearch={setSearchTerm} searchTerm={searchTerm} stories={stories} onRemoveStories={handleRemoveStories}/>)
+      }
+      
       
     </>
   );

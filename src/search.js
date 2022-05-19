@@ -2,12 +2,12 @@ import * as React from 'react';
 import InputWithLabel from './inputWithLabel';
 import TodoList from './TodoList';
 
-function Search({onSearch, searchTerm, todoItems, onRemoveStories}) {
+function Search({onSearch, searchTerm, stories, onRemoveStories}) {
     const handleSearch = (event) => {
         onSearch(event.target.value);
       }
     
-      const searchStories = todoItems.filter((x) => x.title.toLowerCase().includes(searchTerm.toLowerCase()))
+      const searchStories = stories.data.filter((x) => x.title.toLowerCase().includes(searchTerm.toLowerCase()))
     
       return(
         <>
