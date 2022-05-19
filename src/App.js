@@ -81,7 +81,26 @@ const getInitialListItems = () =>
 
 function App() {
   const [searchTerm, setSearchTerm] = useSemiPersistentState('search', '');
-  const [todoList, setTodoList] = useSemiPersistentState('todoList', []);
+  // const [todoList, setTodoList] = useSemiPersistentState('todoList', []);
+  const [todoList, setTodoList] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    new Promise((resolve, reject) => {
+      setTimeout(
+        () => resolve({data: {todoList: JSON.parse(localStorage.getItem('todoList')) || []} }), 2000
+      )
+    }).then(result => {
+      setTodoList(result.data.todoList);
+      setIsLoading(false);
+    })
+  }, []);
+
+  React.useEffect(() => {
+    if (isLoading === false) {
+      localStorage.setItem('todoList', JSON.stringify(todoList));
+    }
+  }, [todoList])
 
   const [stories, dispatchStories] = React.useReducer(
     storiesReducer,
@@ -122,7 +141,8 @@ function App() {
       <h1>My Hacker Stories</h1>
       <AddTodoForm onAddTodo={addTodo}/>
       <hr />
-      <TodoList list={todoList} onRemoveItem={removeTodo}/> {/* will be onRemoveTodo when reviewing */}
+      {isLoading ? (<p>Loading ...</p>) : (<TodoList list={todoList} onRemoveItem={removeTodo}/> )}
+      {/* will be onRemoveTodo when reviewing */}
       {/* <p>{newTodo}</p> */}
       <hr />
       {stories.isError && <p>Something Went Wrong</p>}
